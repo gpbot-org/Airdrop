@@ -8,7 +8,7 @@ from fire import get_user_data, save_user_data
 app = Flask(__name__)
 app.secret_key = "gpbot_the_best"  # Secure your secret key
 
-BOT_TOKEN = "8006330572:AAGqjETC6oqMaJH5MUIJGE_k3EOeHDoxbac"
+BOT_TOKEN = "8006330572:AAGqjETC6oqMaJH5MUIJGE_k3EOeHDoxbac"  # Add your bot token here
 WEB_APP_URL = "https://airdrop-2v66.onrender.com/login"  # Your web app URL
 
 @app.route('/')
