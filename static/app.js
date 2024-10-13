@@ -1,24 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     const earnCoinBtn = document.getElementById('earn-coin-btn');
     const messageDiv = document.getElementById('message');
-
+    
     if (earnCoinBtn) {
         earnCoinBtn.addEventListener('click', function() {
-            fetch('/', { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        // Update the coins displayed
-                        return response.json();
+            fetch('/save_coins', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('coins').textContent = data.coins;
+                        messageDiv.textContent = 'You earned a coin!';
                     } else {
-                        throw new Error('Network response was not ok');
+                        messageDiv.textContent = 'Error earning coin.';
                     }
                 })
-                .then(data => {
-                    document.getElementById('coins').textContent = data.coins;
-                    messageDiv.textContent = 'You earned a coin!';
-                })
                 .catch(error => {
-                    messageDiv.textContent = 'Error earning coin: ' + error.message;
+                    messageDiv.textContent = 'Error: ' + error.message;
                 });
         });
     }
@@ -29,26 +26,24 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             const boostType = document.getElementById('boost-type').value;
 
-            fetch('/boost', {
+            fetch('/buy_boost', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: new URLSearchParams({ boost_type: boostType }),
+                body: JSON.stringify({ boost_type: boostType }),
             })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('coins').textContent = data.coins;
+                    messageDiv.textContent = 'Boost purchased successfully!';
                 } else {
-                    throw new Error('Network response was not ok');
+                    messageDiv.textContent = data.message || 'Error purchasing boost.';
                 }
             })
-            .then(data => {
-                document.getElementById('coins').textContent = data.coins;
-                messageDiv.textContent = 'Boost purchased successfully!';
-            })
             .catch(error => {
-                messageDiv.textContent = 'Error purchasing boost: ' + error.message;
+                messageDiv.textContent = 'Error: ' + error.message;
             });
         });
     }
