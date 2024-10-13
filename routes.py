@@ -7,7 +7,7 @@ routes = Blueprint('routes', __name__)
 
 
 
-@app.route('/')
+@routes.route('/')
 def index():
     user_data = {'coins': 100}  # This is just a mock example
     return render_template('index.html', user_data=user_data)
