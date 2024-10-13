@@ -7,10 +7,11 @@ routes = Blueprint('routes', __name__)
 
 
 
-@routes.route('/')
+@app.route('/')
 def index():
-    """Main page where user can tap to earn coins."""
-    return render_template('index.html')
+    user_data = {'coins': 100}  # This is just a mock example
+    return render_template('index.html', user_data=user_data)
+
 
 @routes.route('/boost')
 def boost():
