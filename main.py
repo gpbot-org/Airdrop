@@ -63,24 +63,43 @@ def airdrop():
     """Airdrop page showing listings."""
     return render_template('airdrop.html')
 
+import requests
+
+BOT_TOKEN = "8006330572:AAGqjETC6oqMaJH5MUIJGE_k3EOeHDoxbac"  # Replace with your bot token
+BASE_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
+
+def get_user_info(user_id):
+    url = f"{BASE_URL}/getChat?chat_id={user_id}"
+    response = requests.get(url)
+    return response.json()
+
 @app.route('/login', methods=['GET'])
 def telegram_login():
     tg_web_app_data = request.args.get('tgWebAppData', None)
     if tg_web_app_data and tg_web_app_data != 'null':
         tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
-        
+
         try:
             tg_data = json.loads(tg_web_app_data)
             user_id = tg_data['user']['id']
             user_name = tg_data['user'].get('username', 'Unknown')
 
-            session['user_id'] = user_id
-            session['user_name'] = user_name
-            return redirect(url_for('index'))
+            # Fetch additional user info from the Bot API
+            user_info = get_user_info(user_id)
+            if user_info['ok']:
+                user_data = user_info['result']
+                # Process the user data as needed
+                session['user_id'] = user_id
+                session['user_name'] = user_name
+                return redirect(url_for('index'))
+            else:
+                return jsonify({"status": "error", "message": "Failed to fetch user info from Bot API"}), 400
+
         except json.JSONDecodeError:
             return jsonify({"status": "error", "message": "Error decoding JSON"}), 400
         except KeyError:
             return jsonify({"status": "error", "message": "Missing user information"}), 400
+
     return jsonify({"status": "error", "message": "Invalid login data"}), 400
 
 @app.route('/save_coins', methods=['POST'])
