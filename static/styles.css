@@ -85,3 +85,44 @@ p {
 .nav-item:hover {
     color: #007BFF;
 }
+body {
+    background-color: #212d3b;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.tap-area img {
+    cursor: pointer;
+    width: 150px; /* Adjust size as needed */
+}
+
+.navbar {
+    background-color: #151e27;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+}
+
+.navbar a {
+    color: #5eabe1;
+    text-decoration: none;
+    padding: 10px;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
