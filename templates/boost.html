@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Boost</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+    
+    <body>
+        <div class="container">
+            <h1>Buy Boosts</h1>
+    
+            <p>Current Coins: <span id="coin-count">0</span></p>
+    
+            <div class="boost-options">
+                <button onclick="buyBoost(2)">Buy 2x Boost (1 coin/sec)</button>
+                <button onclick="buyBoost(3)">Buy 3x Boost (2 coins/sec)</button>
+                <button onclick="buyBoost(10)">Buy 10x Boost (5 coins/sec)</button>
+            </div>
+    
+            <p>Active Boost: <span id="boost-status">None</span></p>
+            <p>Boost ends in: <span id="boost-timer">N/A</span></p>
+    
+            <!-- Navigation bar -->
+            <nav class="bottom-nav">
+                <a href="/" class="nav-item">Home</a>
+                <a href="/boost" class="nav-item">Boost</a>
+                <a href="/airdrop" class="nav-item">Airdrop</a>
+            </nav>
+        </div>
+    
+        <script>
+            let coins = 0;
+            let boostMultiplier = 1;
+            let boostTimer = null;
+    
+            // Update coin count every second
+            setInterval(() => {
+                coins += boostMultiplier;
+                document.getElementById("coin-count").innerText = coins;
+            }, 1000);
+    
+            // Buy a boost and send request to server
+            function buyBoost(multiplier) {
+                fetch('/buy-boost', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ multiplier: multiplier })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        boostMultiplier = multiplier;
+                        document.getElementById("boost-status").innerText = `${multiplier}x Boost`;
+                        startBoostTimer(3 * 60 * 60);  // 3 hours
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+    
+            // Start the boost countdown
+            function startBoostTimer(duration) {
+                let timer = duration;
+                boostTimer = setInterval(() => {
+                    let hours = Math.floor(timer / 3600);
+                    let minutes = Math.floor((timer % 3600) / 60);
+                    let seconds = timer % 60;
+    
+                    document.getElementById("boost-timer").innerText = `${hours}h ${minutes}m ${seconds}s`;
+    
+                    if (--timer < 0) {
+                        clearInterval(boostTimer);
+                        boostMultiplier = 1;
+                        document.getElementById("boost-status").innerText = "None";
+                        document.getElementById("boost-timer").innerText = "N/A";
+                    }
+                }, 1000);
+            }
+        </script>
+    </body>
+    </html>
+    

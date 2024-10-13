@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Airdrop</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+    
+<body>
+    <div class="container">
+        <h1>Airdrop Event</h1>
+        <p>The airdrop will start soon. Stay tuned for updates!</p>
+    </div>
+
+    <!-- Navigation bar that stays at the bottom -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="home-icon">
+            <span>Home</span>
+        </a>
+        <a href="/boost" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="boost-icon">
+            <span>Boost</span>
+        </a>
+        <a href="/airdrop" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="airdrop-icon">
+            <span>Airdrop</span>
+        </a>
+    </nav>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

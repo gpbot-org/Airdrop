@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap to Earn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Tap to Earn Coins</h1>
+        <div class="tap-button" onclick="earnCoins()">
+            <img src="https://via.placeholder.com/150" alt="tap-icon">
+        </div>
+        <p>Coins: <span id="coin-count">0</span></p>
+    </div>
+
+    <!-- Navigation bar -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="home-icon">
+            <span>Home</span>
+        </a>
+        <a href="/boost" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="boost-icon">
+            <span>Boost</span>
+        </a>
+        <a href="/airdrop" class="nav-item">
+            <img src="https://via.placeholder.com/30" alt="airdrop-icon">
+            <span>Airdrop</span>
+        </a>
+    </nav>
+
+    <script>
+        let coins = 0;
+
+        // Function to earn coins
+        function earnCoins() {
+            coins += 1;
+            document.getElementById("coin-count").innerText = coins;
+
+            // Send the updated coin count to the server via an AJAX request
+            fetch('/earn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ coins: coins }),
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

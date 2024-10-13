@@ -1,0 +1,87 @@
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000; /* Black background */
+    color: white;
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #fff;
+    font-size: 24px;
+}
+
+.tap-button img {
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+p {
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.bottom-nav {
+    background-color: #1c1c1c;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.nav-item {
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nav-item img {
+    width: 30px;
+    height: 30px;
+}
+
+.nav-item span {
+    margin-top: 5px;
+}
+
+.nav-item:hover {
+    color: #007BFF;
+}
