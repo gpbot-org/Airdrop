@@ -64,27 +64,42 @@ def airdrop():
     return render_template('airdrop.html')
 
 @app.route('/login', methods=['GET'])
-def login():
+def telegram_login():  # Renamed from login to telegram_login
     tg_web_app_data = request.args.get('tgWebAppData', None)
     if not tg_web_app_data or tg_web_app_data == 'null':
         return "Error: Invalid Telegram Data", 404
     
     try:
+        # Decode the URL-encoded Telegram data
+        tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
         tg_data = json.loads(tg_web_app_data)
+
         user_id = tg_data['user']['id']
-        user_name = tg_data['user']['username']
+        user_name = tg_data['user'].get('username', 'Unknown')  # Default to 'Unknown' if no username
         
         # Fetch or create user in Firebase
         user_data = get_user_data(user_id)
+        
         if not user_data:
-            save_user_data(user_id, {"coins": 0, "boosts": {"2x": {"active": False, "expiry": None},
-                                                              "3x": {"active": False, "expiry": None},
-                                                              "10x": {"active": False, "expiry": None}}})  # Initialize with 0 coins and boost data
-        session['user_id'] = user_id  # Store user_id in session
+            user_data = {
+                "coins": 0,
+                "boosts": {
+                    "2x": {"active": False, "expiry": None},
+                    "3x": {"active": False, "expiry": None},
+                    "10x": {"active": False, "expiry": None}
+                }
+            }
+            save_user_data(user_id, user_data)  # Save the initialized user data
+        
+        session['user_id'] = user_id
+        session['user_name'] = user_name
         return redirect(url_for('index'))
-    
+
     except json.JSONDecodeError:
         return "Error decoding Telegram data", 500
+    except Exception as e:
+        return f"An error occurred: {str(e)}", 500
+
 
 @app.route('/save_coins', methods=['POST'])
 def save_coins():
