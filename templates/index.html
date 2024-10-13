@@ -11,7 +11,8 @@
     <div class="container">
         <header>
             <h1>Welcome to the Coin Tap Game</h1>
-            <p id="coin-count">Coins: <span id="coins">{{ user_data.coins }}</span></p>
+            <p id="coin-count">Coins: <span id="coins">{{ user_data.coins if user_data else 0 }}</span></p>
+
         </header>
         <main>
             <div class="tap-area" id="earn-coin-btn">

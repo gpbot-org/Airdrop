@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1>Buy Boosts</h1>
-            <p>Your Coins: <span id="coins">{{ user_data.coins }}</span></p>
+            <p id="coin-count">Coins: <span id="coins">{{ user_data.coins if user_data else 0 }}</span></p>
         </header>
         <main>
             <form id="boost-form">
@@ -20,6 +20,7 @@
                     <option value="2x">2x Boost (5,000 Coins)</option>
                     <option value="3x">3x Boost (10,000 Coins)</option>
                     <option value="10x">10x Boost (100,000 Coins)</option>
+                    <option value="full">Full Boost (150,000 Coins)</option>
                 </select>
                 <button type="submit">Buy Boost</button>
             </form>
