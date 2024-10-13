@@ -3,7 +3,7 @@ import time
 from fire import get_user_data, save_user_data
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")  # Ensure you set a secret key for session management
+app.secret_key = "gpbot_the_best"  # Ensure you set a secret key for session management
 
 @app.route('/boost')
 def boost_page():
