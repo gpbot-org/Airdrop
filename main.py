@@ -66,15 +66,21 @@ def airdrop():
 @app.route('/login', methods=['GET'])
 def telegram_login():
     tg_web_app_data = request.args.get('tgWebAppData', None)
-    if tg_web_app_data:
+    if tg_web_app_data and tg_web_app_data != 'null':
         tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
-        tg_data = json.loads(tg_web_app_data)
-        user_id = tg_data['user']['id']
-        # Handle user info, e.g., save to session
-        session['user_id'] = user_id
-        return jsonify({"status": "success", "user_id": user_id})
+        
+        try:
+            tg_data = json.loads(tg_web_app_data)
+            user_id = tg_data['user']['id']
+            user_name = tg_data['user'].get('username', 'Unknown')
 
-    # Fallback: Custom user authentication
+            session['user_id'] = user_id
+            session['user_name'] = user_name
+            return redirect(url_for('index'))
+        except json.JSONDecodeError:
+            return jsonify({"status": "error", "message": "Error decoding JSON"}), 400
+        except KeyError:
+            return jsonify({"status": "error", "message": "Missing user information"}), 400
     return jsonify({"status": "error", "message": "Invalid login data"}), 400
 
 @app.route('/save_coins', methods=['POST'])
