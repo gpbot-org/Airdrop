@@ -1,9 +1,65 @@
 from flask import Flask, render_template, request, jsonify
-import json
+import pyrebase
 import time
+import urllib.parse
+import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
+# Firebase configuration using environment variables
+firebase_config = {
+    "apiKey": os.getenv("FIREBASE_API_KEY"),
+    "authDomain": os.getenv("FIREBASE_AUTH_DOMAIN"),
+    "databaseURL": os.getenv("FIREBASE_DATABASE_URL"),
+    "projectId": os.getenv("FIREBASE_PROJECT_ID"),
+    "storageBucket": os.getenv("FIREBASE_STORAGE_BUCKET"),
+    "messagingSenderId": os.getenv("FIREBASE_MESSAGING_SENDER_ID"),
+    "appId": os.getenv("FIREBASE_APP_ID")
+}
+missing_vars = [key for key, value in firebase_config.items() if value is None]
+if missing_vars:
+    raise ValueError(f"Missing environment variables: {', '.join(missing_vars)}")
+
+
+# Initialize Firebase
+firebase = pyrebase.initialize_app(firebase_config)
+db = firebase.database()
+
+@app.route('/')
+def main():
+    return render_template('main.html')
+
+@app.route('/login', methods=['GET'])
+def login():
+    tg_data = request.args.get('tgWebAppData')
+    decoded_data = urllib.parse.unquote(tg_data)
+    user_info = json.loads(decoded_data)
+
+    user_id = user_info.get('user')
+    first_name = user_info.get('first_name', '')
+    last_name = user_info.get('last_name', '')
+
+    user_data = db.child("users").child(user_id).get()
+    
+    if user_data.val() is None:
+        db.child("users").child(user_id).set({
+            "coins": 0,
+            "daily_boost_count": 0,
+            "first_name": first_name,
+            "last_name": last_name
+        })
+
+    return jsonify({
+        "success": True,
+        "coins": db.child("users").child(user_id).child("coins").get().val(),
+        "first_name": first_name,
+        "last_name": last_name
+    })
 
 # Load or create the data file to track boosts
 def load_data():
@@ -18,10 +74,6 @@ def save_data(data):
         json.dump(data, f)
 
 
-# Route for the main page
-@app.route('/')
-def main():
-    return render_template('main.html')
 
 # Route for the boost page
 @app.route('/boost')

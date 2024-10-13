@@ -34,24 +34,26 @@
 
     <script>
         let coins = 0;
-
-        // Function to earn coins
-        function earnCoins() {
-            coins += 1;
-            document.getElementById("coin-count").innerText = coins;
-
-            // Send the updated coin count to the server via an AJAX request
-            fetch('/earn', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ coins: coins }),
-            })
-            .then(response => response.json())
-            .then(data => console.log('Success:', data))
-            .catch((error) => console.error('Error:', error));
+    
+        function login() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tgWebAppData = urlParams.get('tgWebAppData');
+    
+            fetch(`/login?tgWebAppData=${encodeURIComponent(tgWebAppData)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        coins = data.coins;
+                        document.getElementById("coin-count").innerText = coins;
+                    } else {
+                        console.error("Login failed");
+                    }
+                });
         }
+    
+        // Call login on page load
+        window.onload = login;
     </script>
+    
 </body>
 </html>
