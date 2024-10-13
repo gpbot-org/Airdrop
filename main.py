@@ -66,39 +66,16 @@ def airdrop():
 @app.route('/login', methods=['GET'])
 def telegram_login():
     tg_web_app_data = request.args.get('tgWebAppData', None)
-    if not tg_web_app_data or tg_web_app_data == 'null':
-        return "Error: Invalid Telegram Data", 404
-
-    try:
-        # Decode the URL-encoded Telegram data
+    if tg_web_app_data:
         tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
         tg_data = json.loads(tg_web_app_data)
-
         user_id = tg_data['user']['id']
-        user_name = tg_data['user'].get('username', 'Unknown')  # Default to 'Unknown' if no username
-
-        # Fetch or create user in Firebase
-        user_data = get_user_data(user_id)
-
-        if not user_data:
-            user_data = {
-                "coins": 0,
-                "boosts": {
-                    "2x": {"active": False, "expiry": None},
-                    "3x": {"active": False, "expiry": None},
-                    "10x": {"active": False, "expiry": None}
-                }
-            }
-            save_user_data(user_id, user_data)  # Save the initialized user data
-
+        # Handle user info, e.g., save to session
         session['user_id'] = user_id
-        session['user_name'] = user_name
-        return redirect(url_for('index'))
+        return jsonify({"status": "success", "user_id": user_id})
 
-    except json.JSONDecodeError:
-        return "Error decoding Telegram data", 500
-    except Exception as e:
-        return f"An error occurred: {str(e)}", 500
+    # Fallback: Custom user authentication
+    return jsonify({"status": "error", "message": "Invalid login data"}), 400
 
 @app.route('/save_coins', methods=['POST'])
 def save_coins():
