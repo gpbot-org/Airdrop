@@ -1,55 +1,81 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from fire import get_user, create_user, update_user, save_user_coins
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from fire import get_user_data, save_coin_data, update_boost_data
 import json
+
 
 routes = Blueprint('routes', __name__)
 
+
+
 @routes.route('/')
-def main():
-    user_id = request.args.get('user_id')  # Extract user_id from query parameters
-    user_data = get_user(user_id)
+def index():
+    """Main page where user can tap to earn coins."""
+    return render_template('index.html')
 
-    if user_data is None:
-        # Create new user with initial coins and boosts
-        create_user(user_id, {"coins": 0, "boosts": []})
-        user_data = get_user(user_id)
-
-    # Increment coins on tap
-    if request.method == 'POST':  # Assuming a POST request for tapping
-        user_data['coins'] += 1  # Increase coins by 1 for each tap
-        save_user_coins(user_id, user_data['coins'])  # Save updated coins to Firebase
-
-    return render_template('main.html', user_data=user_data)
-
-
-@routes.route('/boost', methods=['GET', 'POST'])
+@routes.route('/boost')
 def boost():
-    user_id = request.args.get('user_id')
-    user_data = get_user(user_id)
-
-    if request.method == 'POST':
-        boost_type = request.form['boost_type']
-        coins = user_data.get('coins', 0)
-
-        # Logic for buying boosts based on type and new prices
-        if boost_type == '2x' and coins >= 5000:
-            user_data['coins'] -= 5000
-            user_data['boosts'].append({'type': '2x', 'duration': 3})  # Add boost with duration
-        elif boost_type == '3x' and coins >= 10000:
-            user_data['coins'] -= 10000
-            user_data['boosts'].append({'type': '3x', 'duration': 3})
-        elif boost_type == '10x' and coins >= 100000:
-            user_data['coins'] -= 100000
-            user_data['boosts'].append({'type': '10x', 'duration': 3})
-
-        # Update user data in Firebase
-        update_user(user_id, user_data)
-        save_user_coins(user_id, user_data['coins'])
-        return redirect(url_for('routes.boost'))
-
-    return render_template('boost.html', user_data=user_data)
-
+    """Boost page for purchasing coin boosts."""
+    return render_template('boost.html')
 
 @routes.route('/airdrop')
 def airdrop():
+    """Airdrop page showing listings."""
     return render_template('airdrop.html')
+
+@routes.route('/login', methods=['GET'])
+def login():
+    tg_web_app_data = request.args.get('tgWebAppData', None)
+    if not tg_web_app_data or tg_web_app_data == 'null':
+        return "Error: Invalid Telegram Data", 404
+    
+    try:
+        tg_data = json.loads(tg_web_app_data)
+        user_id = tg_data['user']['id']
+        user_name = tg_data['user']['username']
+        
+        # Fetch or create user in Firebase
+        user_data = get_user_data(user_id)
+        if not user_data:
+            save_coin_data(user_id, {"coins": 0})  # Initialize with 0 coins
+        return redirect(url_for('index', user_id=user_id))
+    
+    except json.JSONDecodeError:
+        return "Error decoding Telegram data", 500
+
+@routes.route('/save_coins', methods=['POST'])
+def save_coins():
+    """Save coin data when user taps or purchases boost."""
+    data = request.json
+    user_id = data.get('user_id')
+    coins = data.get('coins')
+    
+    if user_id and coins is not None:
+        save_coin_data(user_id, coins)
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
+
+@routes.route('/buy_boost', methods=['POST'])
+def buy_boost():
+    """Buy boost and update user's coins and boost data."""
+    data = request.json
+    user_id = data.get('user_id')
+    boost_type = data.get('boost_type')
+    
+    # Assuming you have a boost price list
+    boost_prices = {"2x": 5000, "3x": 10000, "10x": 100000}
+    
+    user_data = get_user_data(user_id)
+    current_coins = user_data['coins'] if user_data else 0
+    
+    if boost_type in boost_prices:
+        boost_price = boost_prices[boost_type]
+        if current_coins >= boost_price:
+            # Deduct the price and update boost info
+            new_coin_count = current_coins - boost_price
+            save_coin_data(user_id, new_coin_count)
+            update_boost_data(user_id, {"boost_type": boost_type, "end_time": "3h from now"})
+            return jsonify({"status": "success"})
+        else:
+            return jsonify({"status": "error", "message": "Not enough coins"}), 400
+    return jsonify({"status": "error"}), 400
+
