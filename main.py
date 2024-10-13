@@ -5,21 +5,21 @@ from fire import get_user_data, save_user_data
 import urllib.parse
 
 app = Flask(__name__)
-app.secret_key = "gpbot_the_best"  # Ensure you set a secure secret key for session management
+app.secret_key = "gpbot_the_best"  # Set a secure secret key for session management
 
 @app.route('/')
 def index():
     user_id = session.get('user_id')
     if not user_id:
-        return "User not logged in", 403  # Handle unauthenticated user
-    user_data = get_user_data(user_id)  # Fetch user data for the homepage
+        return redirect(url_for('telegram_login'))  # Redirect to login if not authenticated
+    user_data = get_user_data(user_id)
     return render_template('index.html', user_data=user_data)
 
 @app.route('/boost')
 def boost_page():
     user_id = session.get('user_id')
     if not user_id:
-        return "User not logged in", 403  # Handle unauthenticated user
+        return redirect(url_for('telegram_login'))  # Redirect to login if not authenticated
     user_data = get_user_data(user_id)
     return render_template('boost.html', user_data=user_data)
 
@@ -64,11 +64,11 @@ def airdrop():
     return render_template('airdrop.html')
 
 @app.route('/login', methods=['GET'])
-def telegram_login():  # Renamed from login to telegram_login
+def telegram_login():
     tg_web_app_data = request.args.get('tgWebAppData', None)
     if not tg_web_app_data or tg_web_app_data == 'null':
         return "Error: Invalid Telegram Data", 404
-    
+
     try:
         # Decode the URL-encoded Telegram data
         tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
@@ -76,10 +76,10 @@ def telegram_login():  # Renamed from login to telegram_login
 
         user_id = tg_data['user']['id']
         user_name = tg_data['user'].get('username', 'Unknown')  # Default to 'Unknown' if no username
-        
+
         # Fetch or create user in Firebase
         user_data = get_user_data(user_id)
-        
+
         if not user_data:
             user_data = {
                 "coins": 0,
@@ -90,7 +90,7 @@ def telegram_login():  # Renamed from login to telegram_login
                 }
             }
             save_user_data(user_id, user_data)  # Save the initialized user data
-        
+
         session['user_id'] = user_id
         session['user_name'] = user_name
         return redirect(url_for('index'))
@@ -99,7 +99,6 @@ def telegram_login():  # Renamed from login to telegram_login
         return "Error decoding Telegram data", 500
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
-
 
 @app.route('/save_coins', methods=['POST'])
 def save_coins():
@@ -107,51 +106,13 @@ def save_coins():
     data = request.json
     user_id = data.get('user_id')
     coins = data.get('coins')
-    
+
     if user_id and coins is not None:
         user_data = get_user_data(user_id)
         user_data['coins'] = coins
         save_user_data(user_id, user_data)
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
-
-@app.route('/login', methods=['GET'])
-def login():
-    tg_web_app_data = request.args.get('tgWebAppData', None)
-    if not tg_web_app_data or tg_web_app_data == 'null':
-        return "Error: Invalid Telegram Data", 404
-    
-    try:
-        # Decode the URL-encoded Telegram data
-        tg_web_app_data = urllib.parse.unquote(tg_web_app_data)
-        tg_data = json.loads(tg_web_app_data)
-
-        user_id = tg_data['user']['id']
-        user_name = tg_data['user'].get('username', 'Unknown')  # Default to 'Unknown' if no username
-        
-        # Fetch or create user in Firebase
-        user_data = get_user_data(user_id)
-        
-        if not user_data:
-            user_data = {
-                "coins": 0,
-                "boosts": {
-                    "2x": {"active": False, "expiry": None},
-                    "3x": {"active": False, "expiry": None},
-                    "10x": {"active": False, "expiry": None}
-                }
-            }
-            save_user_data(user_id, user_data)  # Save the initialized user data
-        
-        session['user_id'] = user_id
-        session['user_name'] = user_name
-        return redirect(url_for('index'))
-
-    except json.JSONDecodeError:
-        return "Error decoding Telegram data", 500
-    except Exception as e:
-        return f"An error occurred: {str(e)}", 500
-
 
 if __name__ == '__main__':
     import os
